@@ -2,4 +2,4 @@
 
 ### Challenges
 
-- [Multithreading](https://github.com/felipesdias/go-expert-fullcycle/tree/challenge/multithreading)
+- [Multithreading](https://github.com/felipesdias/go-expert-fullcycle/tree/challenge/multithreading/challenges/multithreading)
