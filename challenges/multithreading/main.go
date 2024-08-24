@@ -1,55 +1,41 @@
 package main
 
 import (
+	"challenges_multithreading/models"
+	"challenges_multithreading/services"
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"time"
 )
 
-type CepResult struct {
-	Service      string
-	Cep          string
-	State        string
-	City         string
-	Neighborhood string
-	Street       string
-}
-
-type CepProvider interface {
-	getName() string
-	findCep(string) (*CepResult, error)
-}
-
 func main() {
 	cep := "36576202"
-
-	ctx := context.Background()
-	ctx, cancel := context.WithTimeout(ctx, time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	services := []CepProvider{
-		NewBrasilApi(ctx),
-		NewViaCep(ctx),
+
+	servicesList := []services.CepProvider{
+		services.NewBrasilApi(ctx),
+		services.NewViaCep(ctx),
 	}
 
-	c := make(chan *CepResult)
+	results := make(chan *models.CepResult)
 
-	for _, service := range services {
-		go func() {
-			cep, err := service.findCep(cep)
-			if err != nil && !errors.Is(err, context.Canceled) {
-				log.Println("Error for", service.getName(), err)
+	for _, service := range servicesList {
+		go func(s services.CepProvider) {
+			result, err := s.FindCep(cep)
+			if err != nil && ctx.Err() == nil {
+				log.Println("Error for", s.GetName(), err)
 			} else {
-				c <- cep
+				results <- result
 				cancel()
 			}
-		}()
+		}(service)
 	}
 
 	select {
-	case cepResult := <-c:
-		fmt.Printf("Service: %v\nAddress: %v, %v, %v - %v (%v)\n", cepResult.Service, cepResult.Street, cepResult.Neighborhood, cepResult.City, cepResult.State, cepResult.Cep)
+	case result := <-results:
+		fmt.Printf("Service: %v\nAddress: %v, %v, %v - %v (%v)\n", result.Service, result.Street, result.Neighborhood, result.City, result.State, result.Cep)
 	case <-ctx.Done():
 		log.Fatal("Timeout")
 	}
