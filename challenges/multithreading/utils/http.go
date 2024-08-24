@@ -1,4 +1,4 @@
-package main
+package utils
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func doGet[T any](url string, ctx context.Context) (*T, error) {
+func DoGet[T any](url string, ctx context.Context) (*T, error) {
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, err
@@ -24,11 +24,11 @@ func doGet[T any](url string, ctx context.Context) (*T, error) {
 		return nil, err
 	}
 
-	var rDto T
-	err = json.Unmarshal(body, &rDto)
+	var result T
+	err = json.Unmarshal(body, &result)
 	if err != nil {
 		return nil, err
 	}
 
-	return &rDto, nil
+	return &result, nil
 }

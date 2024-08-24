@@ -2,4 +2,4 @@
 
 ### Running
 
-- Run project: `go run .`
+- Run project: `go run main`
